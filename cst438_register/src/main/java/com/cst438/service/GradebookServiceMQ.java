@@ -5,7 +5,9 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.CourseDTOG;
 import com.cst438.domain.Enrollment;
@@ -35,6 +37,8 @@ public class GradebookServiceMQ extends GradebookService {
 		 
 		// TODO 
 		// create EnrollmentDTO and send to gradebookQueue
+		EnrollmentDTO new_enroll =  new EnrollmentDTO(student_email, student_name, course_id);
+		this.rabbitTemplate.convertAndSend(gradebookQueue.getName(), new_enroll);
 		
 		System.out.println("Message send to gradbook service for student "+ student_email +" " + course_id);  
 		
@@ -46,6 +50,17 @@ public class GradebookServiceMQ extends GradebookService {
 
 		//TODO 
 		// for each student grade in courseDTOG,  find the student enrollment entity, update the grade and save back to enrollmentRepository.
+		for(CourseDTOG.GradeDTO grade: courseDTOG.grades) {
+			Enrollment tmp = enrollmentRepository.findByEmailAndCourseId(grade.student_email, courseDTOG.course_id);
+			if(tmp != null) {
+				tmp.setCourseGrade(grade.grade);
+				
+			} else {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find enrollment record.");
+			}
+			
+		}
+		
 	}
 
 }
