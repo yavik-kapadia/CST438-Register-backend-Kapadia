@@ -55,7 +55,7 @@ public class GradebookServiceMQ extends GradebookService {
 			if(tmp != null) {
 				tmp.setCourseGrade(grade.grade);
 				enrollmentRepository.save(tmp);
-				
+
 			} else {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not find enrollment record.");
 			}
