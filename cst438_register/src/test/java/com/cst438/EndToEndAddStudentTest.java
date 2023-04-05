@@ -96,10 +96,6 @@ public class EndToEndAddStudentTest {
 			driver.get(URL);
 			Thread.sleep(SLEEP_DURATION);
 
-			// select the last of the radio buttons on the list of semesters page.
-			
-			WebElement we = driver.findElement(By.xpath("(//input[@type='radio'])[last()]"));
-			we.click();
 
 			// Locate and click "Add student" button
 			
@@ -116,10 +112,13 @@ public class EndToEndAddStudentTest {
 			Thread.sleep(SLEEP_DURATION);
 			
 			String toast_text = driver.findElement(By.cssSelector(".Toastify__toast-body div:nth-child(2)")).getText();
-			assertEquals("Student added", toast_text);
+			assertEquals("Student added", toast_text, () -> "Error adding student" );
 			
-			Student stu = studentRepository.findByEmail(TEST_USER_EMAIL);
+			
+			Student stu = studentRepository.findByEmail(TEST_USER_EMAIL);System.out.println(toast_text);
 			assertEquals(TEST_USER_NAME, stu.getName());
+			
+			Thread.sleep(SLEEP_DURATION);
 			
 		} catch (Exception ex) {
 			throw ex;
@@ -131,4 +130,66 @@ public class EndToEndAddStudentTest {
 		}
 
 	}
+
+
+@Test
+public void addStudentTestFailure() throws Exception {
+
+	/*
+	 * if student is already exists, then delete the student.
+	 */
+	
+	// set the driver location and start driver
+	//@formatter:off
+	// browser	property name 				Java Driver Class
+	// edge 	webdriver.edge.driver 		EdgeDriver
+	// FireFox 	webdriver.firefox.driver 	FirefoxDriver
+	// IE 		webdriver.ie.driver 		InternetExplorerDriver
+	//@formatter:on
+
+	System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_FILE_LOCATION);
+	WebDriver driver = new ChromeDriver();
+	// Puts an Implicit wait for 10 seconds before throwing exception
+	driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+	try {
+
+		driver.get(URL);
+		Thread.sleep(SLEEP_DURATION);
+
+
+		// Locate and click "Add student" button
+		
+		driver.findElement(By.xpath("//button[@id='open_add_dialog']")).click();
+		Thread.sleep(SLEEP_DURATION);
+
+
+		// enter student name and click Add button
+		
+		driver.findElement(By.xpath("//input[@name='email']")).sendKeys(TEST_USER_EMAIL);
+		driver.findElement(By.xpath("//input[@name='name']")).sendKeys(TEST_USER_NAME);
+
+		driver.findElement(By.xpath("//button[@id='Add']")).click();
+		Thread.sleep(SLEEP_DURATION);
+		
+		String toast_text = driver.findElement(By.cssSelector(".Toastify__toast-body div:nth-child(2)")).getText();
+		assertEquals("Error adding student", toast_text, () -> "Error adding student" );
+		
+		
+		Student stu = studentRepository.findByEmail(TEST_USER_EMAIL);System.out.println(toast_text);
+		assertEquals(TEST_USER_NAME, stu.getName());
+		
+		Thread.sleep(SLEEP_DURATION);
+		
+	} catch (Exception ex) {
+		throw ex;
+	} finally {
+
+
+		driver.close();
+		driver.quit();
+	}
+
 }
+}
+
