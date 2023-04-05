@@ -126,7 +126,7 @@ public class EndToEndAddStudentTest {
 		} finally {
 
 
-
+			driver.close();
 			driver.quit();
 		}
 
